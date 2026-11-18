@@ -1,95 +1,76 @@
 # Heart Disease Prediction
 
-A logistic regression model that predicts the presence of heart disease from 13 clinical features, with a Streamlit app for interactive predictions.
+A logistic regression model that predicts a binary heart-disease label from 13 clinical features, with a Streamlit app for interactive predictions.
 
 > **Disclaimer:** This is an educational project. It is not a medical device and must not be used for diagnosis.
 
-**Live demo:** _add your Streamlit Community Cloud link here_
-
-![App screenshot](assets/app_screenshot.png)
-
-## Results
-
-Evaluated on a stratified 80/20 hold-out split (61 test samples, `random_state=42`).
-
-| Metric | Value |
-|---|---|
-| Accuracy | 0.885 |
-| Precision (disease) | 0.91 |
-| Recall (disease) | 0.88 |
-| F1 (disease) | 0.89 |
-| ROC-AUC | _fill in from notebook_ |
-| 5-fold CV accuracy | _mean ± std from notebook_ |
-
-Confusion matrix (hold-out):
-
-|  | Predicted healthy | Predicted disease |
-|---|---|---|
-| **Actual healthy** | 25 | 3 |
-| **Actual disease** | 4 | 29 |
-
-In a screening context, false negatives (4 missed cases) cost more than false positives, so recall on the disease class is the metric to watch. See the notebook for a threshold analysis.
-
-_Update the table with the numbers from your re-run notebook; the values above come from the original run._
-
 ## Dataset
 
-The UCI Heart Disease (Cleveland) dataset: 303 patients, 13 features, binary target (`1` = disease present). Source: [UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/45/heart+disease).
+`heart.csv` is the Cleveland heart-disease data (a small dataset of roughly 300 patient records) with 13 features and a binary `target` column. Class 1 is treated as the positive class throughout. Check the dataset's documentation for exactly how `target` is encoded before interpreting predictions.
 
 | Feature | Description |
 |---|---|
 | `age` | Age in years |
 | `sex` | 1 = male, 0 = female |
-| `cp` | Chest pain type (0-3) |
+| `cp` | Chest pain type |
 | `trestbps` | Resting blood pressure (mm Hg) |
 | `chol` | Serum cholesterol (mg/dl) |
 | `fbs` | Fasting blood sugar > 120 mg/dl (1 = true) |
-| `restecg` | Resting ECG result (0-2) |
+| `restecg` | Resting ECG result |
 | `thalach` | Maximum heart rate achieved |
 | `exang` | Exercise-induced angina (1 = yes) |
 | `oldpeak` | ST depression induced by exercise |
 | `slope` | Slope of the peak exercise ST segment |
-| `ca` | Number of major vessels colored by fluoroscopy (0-3) |
-| `thal` | Thalassemia result |
+| `ca` | Number of major vessels colored by fluoroscopy |
+| `thal` | Thalassemia test result (coded) |
 
-## Approach
+## Results
 
-1. Exploratory analysis: class balance, correlations, feature distributions.
-2. Preprocessing: `StandardScaler` inside a scikit-learn `Pipeline`, so the app applies identical scaling at inference.
-3. Model: Logistic Regression (`max_iter=1000`), compared against Random Forest and SVM.
-4. Evaluation: stratified split, 5-fold cross-validation, confusion matrix, ROC-AUC.
-5. Interpretation: model coefficients to show which features drive predictions.
+The original version of this project (unscaled logistic regression, single 80/20 split, 61 test samples) reached 88.5% accuracy, with 25 + 29 correct and 3 + 4 wrong predictions.
 
-## Project structure
+`Logistic_Regression.ipynb` is the improved workflow. A test set of 61 rows makes a single accuracy number noisy, so the notebook:
 
-```
-.
-├── app.py                      # Streamlit app
-├── data/heart.csv
-├── notebooks/Logistic_Regression.ipynb
-├── models/logistic_model.pkl   # full pipeline (scaler + model)
-├── assets/app_screenshot.png
-├── requirements.txt
-└── README.md
-```
+- scales features inside a `Pipeline`, which also fixes the original convergence warning
+- uses a stratified split and 5-fold cross-validation
+- reports precision, recall, F1, ROC-AUC, a confusion matrix and an ROC curve
+- compares Logistic Regression, Random Forest and SVM
+- shows the model's coefficients and a decision-threshold analysis
 
-## Run locally
+Run the notebook to see the numbers for each of these.
+
+## Run the app
 
 ```bash
-git clone https://github.com/maheshwarikalaskar/heart-disease-prediction.git
-cd heart-disease-prediction
+git clone https://github.com/maheshwarikalaskar/Logistic_Regression-heart_desease_prediction-.git
+cd Logistic_Regression-heart_desease_prediction-
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Tech stack
+The app fits the scaler and logistic regression from `heart.csv` when it starts (under a second), so it does not depend on a saved model file. Input limits come from the data, so it only offers values the model has seen.
 
-Python, pandas, scikit-learn, joblib, Streamlit, matplotlib
+## Files
+
+```
+.
+├── app.py                    # Streamlit app
+├── heart.csv                 # dataset
+├── Logistic_Regression.ipynb # analysis and evaluation
+├── requirements.txt
+└── README.md
+```
+
+The notebook also saves its fitted pipeline as `logistic_model.pkl`. The app does not need it.
+
+## Limitations
+
+- About 300 records from a single source, so results are uncertain and may not generalise.
+- A statistical demo. Predictions are not clinically validated.
 
 ## Future work
 
-- Probability calibration and decision-threshold tuning for higher recall
-- SHAP-based explanations in the app
+- Probability calibration and decision-threshold tuning
+- Model explanations (for example SHAP) in the app
 - Validation on an external dataset
 
 ## Author
